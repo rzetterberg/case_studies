@@ -212,7 +212,7 @@ nice visual presentation of amount of calls to different functions in the
 application. Here is what the output looks like using the insertion sort on
 these 7300 data points:
 
-![Kcachegrind insertion sort output](https://raw.github.com/rzetterberg/case_studies/blob/master/assets/1_practical_heapsort/kcachegrind_insertion_profile.png)
+![Kcachegrind insertion sort output](https://raw.github.com/rzetterberg/case_studies/master/assets/1_practical_heapsort/kcachegrind_insertion_profile.png)
 
 As you can see the most amount of time if spend doing the comparisons of the
 items. Look at the called amount. That's right, the function is run **26 641 350
