@@ -24,7 +24,7 @@ sorting data points by date.
 
 Each data point looked like this: 
 
-```
+```c
 typedef struct Data_Point{
 	size_t refs;	
 	uint8_t weight;
@@ -46,7 +46,7 @@ point to that memory. See [reference counting](http://en.wikipedia.org/wiki/Refe
 
 Each point is contained in a static length array:
 
-```
+```c
 typedef struct Data_Point_Array{
 	size_t refs;
 	size_t length;
@@ -73,7 +73,7 @@ slow, but I had made a sub-optimal implementation of it.
 
 Here is what the first part of the code looks like: 
 
-```
+```c
 Data_Point_Array *Data_Point_Array_insertion_sort(Data_Point_Array *array)
 {
 	Data_Point_Array *sorted = Data_Point_Array_create(array->length);
@@ -103,7 +103,7 @@ item will not be free'd.
 
 Here is what the insert function looks like:
 
-```
+```c
 static inline void insertion_sort_insert(
 	Data_Point_Array *sorted, 
 	Data_Point *insertee)
