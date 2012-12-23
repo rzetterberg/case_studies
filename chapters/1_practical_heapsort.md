@@ -20,6 +20,12 @@ using different algorithms and seeing how they affected performance. The biggest
 performance boost I got was from switching from [Insertion Sort](http://en.wikipedia.org/wiki/Insertion_sort) to [Heap sort](http://en.wikipedia.org/wiki/Heapsort) when
 sorting data points by date. 
 
+The computer used in this case study has the following specs:
+
+* Pentium(R) Dual-Core CPU T4500 @ 2.30GHz 
+* Linux 3.0.0-15-generic
+* Ubuntu 11.10
+
 ##The data
 
 Each data point looked like this: 
