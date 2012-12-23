@@ -61,9 +61,9 @@ containing the pointers that point towards each data point.
 
 The original algorithm used to sort these points was insertion sort. It's a very
 simple algorithm but it is slow. If it were to sort 100 data points, in the
-worst case it has to do 10 000 (100^2) comparisons and swaps. Comparing that to
+worst case it has to do 10 000 (100^2) comparisons. Comparing that to
 it's replacement (heapsort), which has to in worst case do ~664 (100 *
-log2(100)) comparisons and swaps. 
+log2(100)) comparisons. 
 
 Both these algorithms can do the sorting in-place, which means it doesn't have
 to create a new array to put the results in. It just shifts the items around in
@@ -147,3 +147,73 @@ animation that show visually what happens:
 The animation shows what the algorithm looks like when it's sorting in-place, so
 imagine that the black boxes are items in the sorted array and the other ones
 are the items in the original array. 
+
+##Measuring the original algorithm
+
+Now comes the interesting part, measuring the performance to get an idea of how
+slow this implementation of the algorithm is. 
+
+When doing these measurements the program was compiled with `-O3` optimization
+and *7300* points were used. The data was created using `dd` to get bytes from
+`/dev/urandom`.
+
+Since the datafile is only a flat binary file were the points are stored
+sequencially it is easy to generate random data with `dd`. Each point is stored
+as **8 bytes**, so here is the command used to generate the test file:
+
+```bash
+dd if=/dev/urandom of=random.data bs=8 count=7300
+```
+
+Now that we have fairly large file we will use valgrind to generate profiling
+data for us to look at. But first we will check the program for any memory leaks
+before we do that. Valgrind can do that for us too! Just compile the program
+with -O3 and -g, then run the executable with valgrind:
+
+```bash
+valgrind --leak-check=full --log-file=valgrind.log ./compiled_program
+```
+
+If there are any leaks the output can become quite long, so I like to output the
+information into a file to view with my editor. Here is what my output looks
+like:
+
+```
+==7339== Memcheck, a memory error detector
+==7339== Copyright (C) 2002-2010, and GNU GPL'd, by Julian Seward et al.
+==7339== Using Valgrind-3.6.1-Debian and LibVEX; rerun with -h for copyright
+info
+==7339== Command: ./compiled_program
+==7339== Parent PID: 7338
+==7339==
+==7339==
+==7339== HEAP SUMMARY:
+==7339==     in use at exit: 0 bytes in 0 blocks
+==7339==   total heap usage: 172 allocs, 172 frees, 4,189 bytes allocated
+==7339==
+==7339== All heap blocks were freed -- no leaks are possible
+==7339==
+==7339== For counts of detected and suppressed errors, rerun with: -v
+==7339== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 11 from 6)
+```
+
+Great! No leaks found or any other problems involving memory found.
+
+Now it's time to generate the profiling data:
+
+```bash
+valgrind --tool=callgrind --dump-instr=yes --simulate-cache=yes
+--collect-jumps=yes  ./compiled_program
+```
+
+This will output a file called **compiled_program.out.XXX** where XXX is the pid
+of the application executed. Now we can view this file in `kcachegrind` to get a
+nice visual presentation of amount of calls to different functions in the
+application. Here is what the output looks like using the insertion sort on
+these 7300 data points:
+
+![Kcachegrind insertion sort output](https://github.com/rzetterberg/case_studies/blob/master/assets/1_practical_heapsort/kcachegrind_insertion_profile.png)
+
+As you can see the most amount of time if spend doing the comparisons of the
+items. Look at the called amount. That's right, the function is run **26 641 350
+times**! This took ~20 seconds for my old laptop to complete.
