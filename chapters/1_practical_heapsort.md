@@ -130,6 +130,12 @@ static inline void insertion_sort_insert(
 This is the meat of the algorithm. For each item it recieves, it checks it
 against items already inserted in the sorted array.
 
+The `Data_Point_older` function checks whether the first item
+is older than the second. True, if A is older than B, False if A is not older
+than B and False if A is equally old as B. It is important that if the items are
+equal the compare function should return False. I leave the reason as an
+exercise for the reader to find out.
+
 Here are the steps involved to insert a new item:
 
 1. Start at the beginning of the array, check first item
@@ -142,7 +148,7 @@ current item as a given item.
 Now, that might not be the best explanation of the algorithm, but here is a good
 animation that show visually what happens:
 
-![Insertion sort animation](http://upload.wikimedia.org/wikipedia/commons/0/0f/Insertion-sort-example-300px.gif)
+![Insertion sort animation](https://raw.github.com/rzetterberg/case_studies/master/assets/insertion_sort_animation.gif)
 
 The animation shows what the algorithm looks like when it's sorting in-place, so
 imagine that the black boxes are items in the sorted array and the other ones
@@ -216,4 +222,102 @@ these 7300 data points:
 
 As you can see the most amount of time if spend doing the comparisons of the
 items. Look at the called amount. That's right, the function is run **26 641 350
-times**! This took ~20 seconds for my old laptop to complete.
+times**! This took ~20 seconds for my old laptop to complete. And that's not
+even the worst case, that is about half amount of calls that the worst case
+would be.
+
+I wonder what heap sort can do for us?
+
+##The replacement algorithm
+
+The heapsort algorithm is a bit more complex, but it is much faster. The main
+idea with heapsort is that you build a heap of the data and then use the heap to
+order the items sequencally. It works in-place, and the implementation I will
+show you does too.
+
+A heap is basically a special type of binary tree, but it doesn't require a
+separate data structure, it is created within the array. It does this by
+ordering the items in a special way which represent the tree. Here is a good
+visual representation of how it does this:
+
+![Heapsort animation](https://raw.github.com/rzetterberg/case_studies/master/assets/heapsort_animation.gif)
+
+I won't go into detail how the heapsort algorithm works, because it's out of
+scope of this article. I'll leave reading up on how heapsort works as an
+exercise for the reader.
+
+On to how I have implemented the algorithm! Here is the first part of the code
+for the algorithm:
+
+```c
+void Data_Point_Array_heap_sort(Data_Point_Array *array)
+{
+
+	int32_t i = (array->length / 2) - 1;
+
+	for (; i >= 0; i--) {
+		heap_sort_sift_down(array, i, array->length - 1);
+	}
+
+	for (i = array->length - 1; i >= 1; i--) {
+		Data_Point_Array_items_switch(array, 0, i);
+		heap_sort_sift_down(array, 0, i - 1);
+	}
+}
+```
+
+Here we can see that no array is created to place the sorted result in, we just
+use the existing one. First the heap is built by calling the sift down function
+on half of the array starting from the middle to the start. 
+
+When the heap is created and all items are in place, the heap is then flattened
+into a sequencially sorted array.
+
+Here is what the second part of the code looks like:
+
+```c
+#define HEAP_LEFT(I) (I * 2)
+#define HEAP_RIGHT(I) (HEAP_LEFT(I) + 1)
+
+static void heap_sort_sift_down(
+	Data_Point_Array *array, 
+	size_t current_root, 
+	size_t bottom)
+{
+	size_t left = HEAP_LEFT(current_root);
+	size_t right = HEAP_RIGHT(current_root);
+	size_t root_candidate;
+
+	while (left <= bottom) {
+		if (left == bottom) {
+			root_candidate = left;
+		}else if (Data_Point_older(array->items[left], array->items[right])) {
+			root_candidate = left;
+		}else{
+			root_candidate = right;
+		}
+
+		if (Data_Point_older(array->items[root_candidate], array->items[current_root])) {
+			Data_Point_Array_items_switch(array, current_root, root_candidate);
+
+			current_root = root_candidate;
+			left = HEAP_LEFT(current_root);
+			right = HEAP_RIGHT(current_root);
+		}else{
+			return;
+		}
+	}
+}
+```
+
+If you have read up on heapsort you will probably have seen pseudo-code of
+heapsort being implemented as a recursive algorithm. This implementation uses an
+iterative implementation instead. There are two reasons:
+
+1. For each function call, data is placed on stack memory. Eventually when the
+amount of recursive calls are too many the stack memory will be overflow and the
+program will crash. See [stack overflow](http://en.wikipedia.org/wiki/Stack_overflow)
+2. For each recursive call there are instructions that needs to be run to set up
+the function call, by using a loop instead we don't have to run those
+instructions which makes the algorithm faster.
+
