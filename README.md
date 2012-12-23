@@ -25,4 +25,4 @@ to check for memory leaks and to produce profiling information to use in
 kcachegrind. 
 
 [Link for the
-chapter](https://github.com/rzetterberg/case_studies/blob/master/chapters/1_practical_heapsort/index.md)
+chapter](https://github.com/rzetterberg/case_studies/blob/master/chapters/1_practical_heapsort.md)
