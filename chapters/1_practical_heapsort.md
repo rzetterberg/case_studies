@@ -321,3 +321,13 @@ program will crash. See [stack overflow](http://en.wikipedia.org/wiki/Stack_over
 the function call, by using a loop instead we don't have to run those
 instructions which makes the algorithm faster.
 
+##Measuring the replacement algorithm
+
+Assume that the same steps were performed before profiling this algorithm as
+with the original algirithm. Here is what the kcachegrind output looks like for
+the heapsort algorithm:
+
+![Kcachegrind heapsort output](https://raw.github.com/rzetterberg/case_studies/master/assets/1_practical_heapsort/kcachegrind_heapsort_profile.png)
+
+That is a big improvement! From **26 641 350 comparisons** we are not down to **179 688**.
+Using this algorithm the sort took less than 1 second to run on my old laptop.
